@@ -26,7 +26,7 @@ int main()
     map<string, set<string>> first_sets;
 
     takeGrammar(grammar);
-    printVector(grammar);
+    // printVector(grammar);
 
     getProductionRules(grammar, production_rules);
     printProductionRules(production_rules);
@@ -180,16 +180,41 @@ void getFirst_set(string left, map<string, vector<string>> grammar, map<string, 
 
     for (auto &production : grammar[left])
     {
-        string symbol = string(1, production[0]);
+
+        int index = 0;
+        string symbol = string(1, production[index]);
         if (isTerminal(symbol))
         {
             first_set[left].insert(symbol);
         }
 
         getFirst_set(symbol, grammar, first_set);
+        bool epsilon = false;
         for (auto &first : first_set[symbol])
         {
-            first_set[left].insert(first);
+            // first_set[left].insert(first);
+            if (first != "ε")
+            {
+                first_set[left].insert(first);
+            }
+            else if (first == "ε")
+            {
+                if (index < production.length() - 1)
+                {
+                    index++;
+                    symbol = string(1, production[index]);
+
+                    if (isTerminal(symbol))
+                    {
+                        first_set[left].insert(symbol);
+                    }
+                    getFirst_set(symbol, grammar, first_set);
+                }
+                else if (index == production.length() - 1)
+                {
+                    first_set[left].insert("ε");
+                }
+            }
         }
     }
 }
@@ -197,9 +222,28 @@ void getFirst_set(string left, map<string, vector<string>> grammar, map<string, 
 void printFirst(string left, map<string, set<string>> first_set)
 {
     cout << left << " => { ";
-    for (auto &first : first_set[left])
+
+    int len = first_set[left].size();
+
+    if (len == 1)
     {
-        cout << first << " ,";
+        for (auto &a : first_set[left])
+        {
+            cout << a;
+        }
     }
-    cout << "}" << endl;
+    else if (len >= 2)
+    {
+        int count = 0;
+        for (const auto &a : first_set[left])
+        {
+            cout << a;
+            if (++count < len)
+            {
+                cout << ", ";
+            }
+        }
+    }
+
+    cout << " }" << endl;
 }
