@@ -16,7 +16,7 @@ void printProductionRules(vector<pair<string, vector<string>>> &production_rules
 bool isTerminal(string ch);
 bool isTerminal(char ch);
 void getFirst(vector<pair<string, vector<string>>> &production_rules, map<string, set<string>> &first_set);
-void getFirst_set(string left, map<string, vector<string>> grammar, map<string, set<string>> &first_set);
+void getFirst_set(string left, map<string, vector<string>> &grammar, map<string, set<string>> &first_set);
 void printFirst(string left, map<string, set<string>> first_set);
 
 int main()
@@ -47,7 +47,7 @@ void takeGrammar(vector<string> &grammar)
     string rule;
     string prevLine;
     // change this to read from terminal
-    // whiele (true)
+    // while(true)
     while (getline(cin, rule))
     {
         // getline(cin, rule);
@@ -165,13 +165,24 @@ void getFirst(vector<pair<string, vector<string>>> &production_rules, map<string
         grammar[rule.first] = rule.second;
     }
 
+    // print("=====grammar======");
+    // for (auto &element : grammar)
+    // {
+    //     cout << element.first << " => ";
+    //     for (auto &a : element.second)
+    //     {
+    //         cout << a << ", ";
+    //     }
+    //     cout << endl;
+    // }
+
     for (auto &symbol : grammar)
     {
         getFirst_set(symbol.first, grammar, first_set);
     }
 }
 
-void getFirst_set(string left, map<string, vector<string>> grammar, map<string, set<string>> &first_set)
+void getFirst_set(string left, map<string, vector<string>> &grammar, map<string, set<string>> &first_set)
 {
     if (!first_set[left].empty())
     {
@@ -187,9 +198,11 @@ void getFirst_set(string left, map<string, vector<string>> grammar, map<string, 
         {
             first_set[left].insert(symbol);
         }
+        else
+        {
+            getFirst_set(symbol, grammar, first_set);
+        }
 
-        getFirst_set(symbol, grammar, first_set);
-        bool epsilon = false;
         for (auto &first : first_set[symbol])
         {
             // first_set[left].insert(first);
@@ -208,7 +221,10 @@ void getFirst_set(string left, map<string, vector<string>> grammar, map<string, 
                     {
                         first_set[left].insert(symbol);
                     }
-                    getFirst_set(symbol, grammar, first_set);
+                    else
+                    {
+                        getFirst_set(symbol, grammar, first_set);
+                    }
                 }
                 else if (index == production.length() - 1)
                 {

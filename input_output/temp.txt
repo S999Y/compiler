@@ -1,0 +1,11 @@
+S -> A
+A -> aBA | bD
+B -> Cb | ε
+C -> A
+D -> d
+
+E  -> TR
+R  -> +TR| #
+T  -> FY
+Y  -> *FY | #
+F  -> (E) | i
