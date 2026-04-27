@@ -2,8 +2,6 @@
 
 #define PI 3.1416
 
-int SPEED = 100;
-
 using namespace std;
 
 class UserInfo
@@ -24,18 +22,14 @@ public:
     }
 };
 
-void cal(int n, int b)
-{
-    try
-    {
-        if (b == 0)
-        {
+void cal(int n, int b) {
+    try {
+        if (b == 0) {
             throw runtime_error("Division by zero!");
         }
         cout << n / b << endl;
     }
-    catch (exception &e)
-    {
+    catch(exception& e) {
         cerr << "Error: " << e.what() << '\n';
     }
 }
@@ -51,7 +45,7 @@ int main()
     UserInfo student(userId, user_name);
 
     student.PrintUserInfo();
-    cal(1, 0);
+    cal(1,0);
 
     return 0;
 }

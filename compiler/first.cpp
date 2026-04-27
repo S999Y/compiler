@@ -1,38 +1,56 @@
 #include <bits/stdc++.h>
+
+#define print(x) cout << x << endl
+
 using namespace std;
 
-void takeGrammer(vector<string> &grammer);
-void separateProduction(vector<string> &grammer, vector<pair<char,string>> &productions);
-void getFirsts(vector<string> &grammer, vector<pair<char,string>> &productions);
-void printVector(vector<string> &grammer);
-void printProductions(vector<pair<char,string>> &productions,map<char,vector<char>> &first);
+// take grammar from user input and print it
+void takeGrammar(vector<string> &grammar);
+void printVector(vector<string> &grammar);
+
+// get production rules from grammar and print them
+void getProductionRules(vector<string> &grammar, vector<pair<string, vector<string>>> &production_rules);
+void printProductionRules(vector<pair<string, vector<string>>> &production_rules);
+
+// get first sets from production rules and print them
+bool isTerminal(string ch);
+bool isTerminal(char ch);
+void getFirst(vector<pair<string, vector<string>>> &production_rules, map<string, set<string>> &first_set);
+void getFirst_set(string left, map<string, vector<string>> grammar, map<string, set<string>> &first_set);
+void printFirst(string left, map<string, set<string>> first_set);
 
 int main()
 {
-    vector<string> grammer;
-    vector<pair<char,string>> productions; 
-    map<char,vector<char>> first;
+    vector<string> grammar;
+    vector<pair<string, vector<string>>> production_rules;
+    map<string, set<string>> first_sets;
 
-    takeGrammer(grammer);
-    printVector(grammer);
+    takeGrammar(grammar);
+    // printVector(grammar);
 
-    separateProduction(grammer, productions);
-    printProductions(productions);
+    getProductionRules(grammar, production_rules);
+    printProductionRules(production_rules);
 
-    getFirsts(grammer,productions);
+    print("======getFirst======");
+    getFirst(production_rules, first_sets);
+
+    for (auto &t : production_rules)
+    {
+        printFirst(t.first, first_sets);
+    }
 
     return 0;
 }
 
-void takeGrammer(vector<string> &grammer)
+void takeGrammar(vector<string> &grammar)
 {
     string rule;
     string prevLine;
-
-    while (true)
+    // change this to read from terminal
+    // whiele (true)
+    while (getline(cin, rule))
     {
-        getline(cin, rule);
-
+        // getline(cin, rule);
         if (rule.empty() && prevLine.empty())
         {
             break;
@@ -40,67 +58,196 @@ void takeGrammer(vector<string> &grammer)
 
         if (!rule.empty())
         {
-            grammer.push_back(rule);
+            grammar.push_back(rule);
         }
 
         prevLine = rule;
     }
 }
 
-void separateProduction(vector<string> &grammer, vector<pair<char,string>> &productions)
+void printVector(vector<string> &grammar)
 {
-    for (auto &rule: grammer){
-        int len = rule.length();
-        char lhs = rule[0]; 
-
-        for (int i=0;i<len;i++){
-            if (rule[i]=='>'){
-                string prd = "";
-                for (int j=i+1;j<len;j++){
-                    if (rule[j]!=' ' && rule[j]!='|'){
-                        prd+=rule[j];
-                    }
-                    else if (!prd.empty())
-                    {
-                        productions.push_back({lhs, prd});
-                        prd="";
-                    }
-                }
-                if (!prd.empty()){
-                    productions.push_back({lhs, prd});
-                }
-                break; 
-            }
-        }
-    }
-}
-
-void getFirsts(vector<string> &grammer, vector<pair<char,string>> &productions,map<char,vector<char>> &first){
-    for (auto &prd: productions){
-        if (prd.second[0]>='a' && prd.second[0]<='z')
-        {
-            first[prd.first].push_back(prd.second[0]);
-        }
-        else{
-            
-        }
-    }
-}
-
-void printVector(vector<string> &grammer)
-{
-    cout<<endl;
-    for (auto &rule : grammer)
+    for (const auto &rule : grammar)
     {
         cout << rule << endl;
     }
+    cout << endl;
 }
 
-void printProductions(vector<pair<char,string>> &productions)
+void getProductionRules(vector<string> &grammar, vector<pair<string, vector<string>>> &production_rules)
 {
-    cout << endl;
-    for (auto &entry : productions)
+    string left_side = "";
+    vector<string> right_side;
+    for (auto &rule : grammar)
     {
-        cout << entry.first << " -> " << entry.second << endl;
+        int len = rule.length();
+        for (int i = 0; i < len; i++)
+        {
+            if (rule[i] != ' ' && rule[i] != '-' && rule[i] != '>')
+            {
+                left_side += rule[i];
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        for (int i = 0; i < len; i++)
+        {
+            if (rule[i] == '>')
+            {
+                string production = "";
+                for (int j = i + 1; j < len; j++)
+                {
+                    if (rule[j] != ' ' && rule[j] != '|')
+                    {
+                        production += rule[j];
+                    }
+                    else if (!production.empty())
+                    {
+                        right_side.push_back(production);
+                        production = "";
+                    }
+                }
+                if (!production.empty())
+                {
+                    right_side.push_back(production);
+                }
+
+                break;
+            }
+        }
+        production_rules.push_back({left_side, right_side});
+        left_side = "";
+        right_side.clear();
     }
+}
+
+void printProductionRules(vector<pair<string, vector<string>>> &production_rules)
+{
+    for (const auto &rule : production_rules)
+    {
+        string left = rule.first;
+        vector<string> right = rule.second;
+
+        for (auto &production : right)
+        {
+            cout << left << " -> " << production << endl;
+        }
+    }
+    cout << endl;
+}
+
+bool isTerminal(string ch)
+{
+    bool terminal = true;
+    for (auto &a : ch)
+    {
+        if (a >= 'A' && a <= 'Z')
+        {
+            return terminal = false;
+        }
+    }
+    return terminal;
+}
+
+bool isTerminal(char ch)
+{
+    return !(ch >= 'A' && ch <= 'Z');
+}
+
+void getFirst(vector<pair<string, vector<string>>> &production_rules, map<string, set<string>> &first_set)
+{
+    map<string, vector<string>> grammar;
+    for (auto &rule : production_rules)
+    {
+        grammar[rule.first] = rule.second;
+    }
+
+    for (auto &symbol : grammar)
+    {
+        getFirst_set(symbol.first, grammar, first_set);
+    }
+}
+
+void getFirst_set(string left, map<string, vector<string>> grammar, map<string, set<string>> &first_set)
+{
+    if (!first_set[left].empty())
+    {
+        return;
+    }
+
+    for (string production : grammar[left])
+    {
+        bool allEpsilon = true;
+        for (char c : production)
+        {
+            string symbol(1, c);
+
+            if (isTerminal(c))
+            {
+                first_set[left].insert(symbol);
+                allEpsilon = false;
+                break; // Stop at first terminal
+            }
+            else
+            {
+                // Recursive call for non-terminal
+                getFirst_set(symbol, grammar, first_set);
+
+                bool containsEpsilon = false;
+                for (auto &f : first_set[symbol])
+                {
+                    if (f != "ε")
+                    {
+                        first_set[left].insert(f);
+                    }
+                    else
+                    {
+                        containsEpsilon = true;
+                    }
+                }
+
+                if (!containsEpsilon)
+                {
+                    allEpsilon = false;
+                    break;
+                }
+            }
+        }
+        if (allEpsilon)
+        {
+            first_set[left].insert("ε");
+        }
+    }
+}
+
+void printFirst(string left, map<string, set<string>> first_set)
+{
+    cout << left << " => { ";
+
+    int len = first_set[left].size();
+
+    if (len == 1)
+    {
+        for (auto &a : first_set[left])
+        {
+            cout << a;
+        }
+    }
+    else if (len >= 2)
+    {
+        int count = 0;
+        for (const auto &a : first_set[left])
+        {
+            cout << a;
+            if (++count < len)
+            {
+                cout << ", ";
+            }
+        }
+    }
+
+    cout << " }" << endl;
 }

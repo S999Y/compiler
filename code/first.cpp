@@ -17,7 +17,7 @@ bool isTerminal(string ch);
 bool isTerminal(char ch);
 void getFirst(vector<pair<string, vector<string>>> &production_rules, map<string, set<string>> &first_set);
 void getFirst_set(string left, map<string, vector<string>> &grammar, map<string, set<string>> &first_set);
-void printFirst(string left, map<string, set<string>> first_set);
+void printFirst(string left, map<string, set<string>> &first_set);
 
 int main()
 {
@@ -47,7 +47,7 @@ void takeGrammar(vector<string> &grammar)
     string rule;
     string prevLine;
     // change this to read from terminal
-    // while(true)
+    // whiele (true)
     while (getline(cin, rule))
     {
         // getline(cin, rule);
@@ -165,17 +165,6 @@ void getFirst(vector<pair<string, vector<string>>> &production_rules, map<string
         grammar[rule.first] = rule.second;
     }
 
-    // print("=====grammar======");
-    // for (auto &element : grammar)
-    // {
-    //     cout << element.first << " => ";
-    //     for (auto &a : element.second)
-    //     {
-    //         cout << a << ", ";
-    //     }
-    //     cout << endl;
-    // }
-
     for (auto &symbol : grammar)
     {
         getFirst_set(symbol.first, grammar, first_set);
@@ -189,53 +178,52 @@ void getFirst_set(string left, map<string, vector<string>> &grammar, map<string,
         return;
     }
 
-    for (auto &production : grammar[left])
+    for (string production : grammar[left])
     {
+        bool allEpsilon = true;
+        for (char c : production)
+        {
+            string symbol(1, c);
 
-        int index = 0;
-        string symbol = string(1, production[index]);
-        if (isTerminal(symbol))
-        {
-            first_set[left].insert(symbol);
-        }
-        else
-        {
-            getFirst_set(symbol, grammar, first_set);
-        }
-
-        for (auto &first : first_set[symbol])
-        {
-            // first_set[left].insert(first);
-            if (first != "ε")
+            if (isTerminal(c))
             {
-                first_set[left].insert(first);
+                first_set[left].insert(symbol);
+                allEpsilon = false;
+                break; // Stop at first terminal
             }
-            else if (first == "ε")
+            else
             {
-                if (index < production.length() - 1)
-                {
-                    index++;
-                    symbol = string(1, production[index]);
+                // Recursive call for non-terminal
+                getFirst_set(symbol, grammar, first_set);
 
-                    if (isTerminal(symbol))
+                bool containsEpsilon = false;
+                for (auto &f : first_set[symbol])
+                {
+                    if (f != "ε")
                     {
-                        first_set[left].insert(symbol);
+                        first_set[left].insert(f);
                     }
                     else
                     {
-                        getFirst_set(symbol, grammar, first_set);
+                        containsEpsilon = true;
                     }
                 }
-                else if (index == production.length() - 1)
+
+                if (!containsEpsilon)
                 {
-                    first_set[left].insert("ε");
+                    allEpsilon = false;
+                    break;
                 }
             }
+        }
+        if (allEpsilon)
+        {
+            first_set[left].insert("ε");
         }
     }
 }
 
-void printFirst(string left, map<string, set<string>> first_set)
+void printFirst(string left, map<string, set<string>> &first_set)
 {
     cout << left << " => { ";
 
