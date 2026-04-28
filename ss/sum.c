@@ -10,13 +10,21 @@ int sumRec(int sum, int n)
     return sum = sum + n + sumRec(sum, n - 1);
 }
 
+int factorial(int x){
+
+    if(x == 0){
+        return 1;
+    }
+
+    return x * factorial(x - 1);
+}
+
 int main()
 {
     int n = 5;
-    int sum = 0;
-    sum = sumRec(sum, n);
+    int fact = factorial(n);
 
-    printf("%d\n", sum);
-
+    printf("Factorial of %d is %d\n", n, fact);
+    
     return 0;
 }
