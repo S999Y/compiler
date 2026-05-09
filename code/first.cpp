@@ -19,11 +19,16 @@ void getFirst(vector<pair<string, vector<string>>> &production_rules, map<string
 void getFirst_set(string left, map<string, vector<string>> &grammar, map<string, set<string>> &first_set);
 void printFirst(string left, map<string, set<string>> &first_set);
 
+// get follow set from production
+void getFollow(vector<pair<string, vector<string>>> &production_rules, map<string, set<string>> &first_set, map<string, set<string>> &follow_set);
+void getFollow_set(string symbol, vector<pair<string, vector<string>>> &production_rules, map<string, set<string>> &first_set, map<string, set<string>> &follow_set);
+
 int main()
 {
     vector<string> grammar;
     vector<pair<string, vector<string>>> production_rules;
     map<string, set<string>> first_sets;
+    map<string, set<string>> follow_set;
 
     takeGrammar(grammar);
     // printVector(grammar);
@@ -37,6 +42,15 @@ int main()
     for (auto &t : production_rules)
     {
         printFirst(t.first, first_sets);
+    }
+
+    cout << endl;
+    print("======getFollow======");
+    getFollow(production_rules, first_sets, follow_set);
+
+    for (auto &t : production_rules)
+    {
+        printFirst(t.first, follow_set);
     }
 
     return 0;
@@ -250,4 +264,82 @@ void printFirst(string left, map<string, set<string>> &first_set)
     }
 
     cout << " }" << endl;
+}
+
+void getFollow(vector<pair<string, vector<string>>> &production_rules, map<string, set<string>> &first_set, map<string, set<string>> &follow_set)
+{
+    bool isStartSymbol = true;
+    for (auto &prd : production_rules)
+    {
+        if (isStartSymbol)
+        {
+            follow_set[prd.first].insert("$");
+            isStartSymbol = false;
+        }
+        getFollow_set(prd.first, production_rules, first_set, follow_set);
+    }
+}
+
+void getFollow_set(string symbol, vector<pair<string, vector<string>>> &production_rules, map<string, set<string>> &first_set, map<string, set<string>> &follow_set)
+{
+    for (auto &prd : production_rules)
+    {
+        string parent = prd.first;
+
+        for (auto &rule : prd.second)
+        {
+            int len = rule.length();
+
+            for (int i = 0; i < len; i++)
+            {
+                if (symbol[0] == rule[i])
+                {
+                    if (i + 1 < len)
+                    {
+                        if (isTerminal(rule[i + 1]))
+                        {
+                            follow_set[symbol].insert(string(1, rule[i + 1]));
+                        }
+                        else
+                        {
+                            bool hasEpsilon = false;
+                            for (auto &first : first_set[string(1, rule[i + 1])])
+                            {
+                                if (first == "ε")
+                                {
+                                    hasEpsilon = true;
+                                }
+                                else
+                                {
+                                    follow_set[symbol].insert(first);
+                                }
+                            }
+
+                            if (hasEpsilon)
+                            {
+                                if ((i + 2 < len) && (isTerminal(rule[i + 2])))
+                                {
+                                    follow_set[symbol].insert(string(1, rule[i + 2]));
+                                }
+                                else
+                                {
+                                    for (auto &follow : follow_set[parent])
+                                    {
+                                        follow_set[symbol].insert(follow);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    else if (i + 1 >= len)
+                    {
+                        for (auto &follow : follow_set[parent])
+                        {
+                            follow_set[symbol].insert(follow);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
