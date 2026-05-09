@@ -5,7 +5,7 @@ C -> A
 D -> d
 
 E  -> TR
-R  -> +TR| #
+R  -> +TR| ε
 T  -> FY
-Y  -> *FY | #
+Y  -> *FY | ε
 F  -> (E) | i
